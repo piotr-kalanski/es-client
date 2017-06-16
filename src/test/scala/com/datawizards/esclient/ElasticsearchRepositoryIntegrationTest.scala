@@ -26,6 +26,7 @@ class ElasticsearchRepositoryIntegrationTest extends FunSuite {
     if(repository.status()) {
       createIndexTest()
       writeReadDocumentTest()
+      writeMultipleDocumentsTest()
     }
     else {
       println("Elasticsearch instance not running!")
@@ -46,11 +47,30 @@ class ElasticsearchRepositoryIntegrationTest extends FunSuite {
     val indexName = "people"
     val typeName = "person"
     val id = "1"
-    repository.deleteIndex(indexName)
+    repository.deleteIndexIfNotExists(indexName)
     repository.createIndex(indexName, mapping)
     repository.write(indexName, typeName, id, person)
     assertResult(person) {
       repository.read[Person](indexName, typeName, id)
+    }
+  }
+
+  private def writeMultipleDocumentsTest(): Unit = {
+    val indexName = "peoplemultiple"
+    val typeName = "person"
+    val p1 = Person("p1", 1)
+    val p2 = Person("p2", 2)
+    val data = Seq(p1, p2)
+    repository.deleteIndexIfNotExists(indexName)
+    repository.createIndex(indexName, mapping)
+    repository.write(indexName, typeName, data) {
+      p => p.name
+    }
+    assertResult(p1){
+      repository.read[Person](indexName, typeName, "p1")
+    }
+    assertResult(p2){
+      repository.read[Person](indexName, typeName, "p2")
     }
   }
 

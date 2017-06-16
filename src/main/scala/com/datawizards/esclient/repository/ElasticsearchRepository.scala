@@ -79,6 +79,18 @@ trait ElasticsearchRepository {
     index(indexName, typeName, documentId, document)
 
   /**
+    * Writes documents to Elasticsearch index
+    *
+    * @param indexName index name
+    * @param typeName type name
+    * @param documentIdGenerator function generating document id based on document class
+    * @param documents list of documents to write
+    */
+  def write[T <: AnyRef](indexName: String, typeName: String, documents: Traversable[T])(documentIdGenerator: T => String): Unit =
+    for(doc <- documents)
+      write(indexName, typeName, documentIdGenerator(doc), doc)
+
+  /**
     * Read document from Elasticsearch index
     */
   def read[T: ClassTag: TypeTag](indexName: String, typeName: String, documentId: String): T
