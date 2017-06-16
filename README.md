@@ -77,3 +77,12 @@ repository.indexExists(indexName)
 ```scala
 repository.deleteIndex(indexName)
 ```
+
+## Writing and reading documents
+
+```scala
+case class Person(name: String, age: Int)
+
+repository.write("people", "person", "1", Person("p1", 20))
+repository.read[Person]("people", "person", "1")
+```
