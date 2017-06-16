@@ -1,5 +1,7 @@
 package com.datawizards.esclient.repository
 
+import com.datawizards.esclient.dto.SearchResult
+
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe.TypeTag
 
@@ -86,12 +88,38 @@ trait ElasticsearchRepository {
     * @param documentIdGenerator function generating document id based on document class
     * @param documents list of documents to write
     */
-  def write[T <: AnyRef](indexName: String, typeName: String, documents: Traversable[T])(documentIdGenerator: T => String): Unit =
+  def writeAll[T <: AnyRef](indexName: String, typeName: String, documents: Traversable[T])(documentIdGenerator: T => String): Unit =
     for(doc <- documents)
       write(indexName, typeName, documentIdGenerator(doc), doc)
+
+  /**
+    * Add new document to Elasticsearch index - alias for index()
+    */
+  def append[T <: AnyRef](indexName: String, typeName: String, document: T): Unit
+
+  /**
+    * Add new document to Elasticsearch index - alias for index()
+    */
+  def append(indexName: String, typeName: String, document: String): Unit
+
+  /**
+    * Add new documents to Elasticsearch index
+    *
+    * @param indexName index name
+    * @param typeName type name
+    * @param documents list of documents to write
+    */
+  def appendAll[T <: AnyRef](indexName: String, typeName: String, documents: Traversable[T]): Unit =
+    for(doc <- documents)
+      append(indexName, typeName, doc)
 
   /**
     * Read document from Elasticsearch index
     */
   def read[T: ClassTag: TypeTag](indexName: String, typeName: String, documentId: String): T
+
+  /**
+    * Search request without any criteria - returns first documents from index
+    */
+  def search[T: ClassTag: TypeTag](indexName: String): SearchResult[T]
 }

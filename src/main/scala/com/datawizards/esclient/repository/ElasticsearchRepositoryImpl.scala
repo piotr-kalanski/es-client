@@ -1,5 +1,7 @@
 package com.datawizards.esclient.repository
 
+import com.datawizards.esclient.dto.SearchResult
+
 import scalaj.http._
 import org.json4s.jackson.Serialization
 import org.json4s._
@@ -17,6 +19,18 @@ object ElasticsearchRepositoryImpl {
 
   private def mapJsonToClass[T: ClassTag : TypeTag](json: String): T =
     (parse(json) \ "_source").extract[T]
+
+  private def mapHitsToSearchResult[T: ClassTag : TypeTag](json: String): SearchResult[T] = {
+    val result = parse(json) \ "hits"
+    val total = (result \ "total").extract[Long]
+    val documents = result \ "hits" \ "_source"
+    val hits = for {
+      JArray(arr) <- documents
+      d <- arr
+    } yield d.extract[T]
+    SearchResult(total, hits)
+  }
+
 }
 
 class ElasticsearchRepositoryImpl(url: String) extends ElasticsearchRepository {
@@ -106,6 +120,18 @@ class ElasticsearchRepositoryImpl(url: String) extends ElasticsearchRepository {
     }
   }
 
+  override def append[T <: AnyRef](indexName: String, typeName: String, document: T): Unit =
+    append(indexName, typeName, ElasticsearchRepositoryImpl.mapClassToJson(document))
+
+  override def append(indexName: String, typeName: String, document: String): Unit = {
+    val endpoint = url + "/" + indexName + "/" + typeName
+    val request = Http(endpoint).postData(document)
+    val response: HttpResponse[String] = request.asString
+    if(response.code >= 300) {
+      throw new Exception(response.body)
+    }
+  }
+
   override def read[T: ClassTag : TypeTag](indexName: String, typeName: String, documentId: String): T = {
     val endpoint = url + "/" + indexName + "/" + typeName + "/" + documentId
     val request = Http(endpoint)
@@ -116,4 +142,13 @@ class ElasticsearchRepositoryImpl(url: String) extends ElasticsearchRepository {
     ElasticsearchRepositoryImpl.mapJsonToClass(response.body)
   }
 
+  override def search[T: ClassTag : TypeTag](indexName: String): SearchResult[T] = {
+    val endpoint = url + "/" + indexName + "/_search"
+    val request = Http(endpoint)
+    val response: HttpResponse[String] = request.asString
+    if(response.code != 200) {
+      throw new Exception(response.body)
+    }
+    ElasticsearchRepositoryImpl.mapHitsToSearchResult(response.body)
+  }
 }
