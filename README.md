@@ -24,7 +24,7 @@ Lightweight Scala Elasticsearch client implemented using Elasticsearch REST API.
 ## Include dependencies
 
 ```scala
-"com.github.piotr-kalanski" % "es-client_2.11" % "0.1.0"
+"com.github.piotr-kalanski" % "es-client_2.11" % "0.2.0"
 ```
 
 or
@@ -33,7 +33,7 @@ or
 <dependency>
     <groupId>com.github.piotr-kalanski</groupId>
     <artifactId>es-client_2.11</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
 </dependency>
 ```
 
