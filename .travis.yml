@@ -1,0 +1,13 @@
+language: scala
+
+scala:
+  2.11.8
+
+jdk:
+  - oraclejdk8
+
+script:
+  - sbt clean coverage test coverageReport
+
+after_success:
+- bash <(curl -s https://codecov.io/bash) -t 8b59a5a0-e08f-4e5f-8428-aaf1f44410bf
