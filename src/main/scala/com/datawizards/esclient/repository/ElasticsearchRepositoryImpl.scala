@@ -4,8 +4,10 @@ import scalaj.http._
 import org.json4s.jackson.Serialization
 import org.json4s._
 import org.json4s.native.JsonMethods._
+
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe.TypeTag
+import scala.util.Try
 
 object ElasticsearchRepositoryImpl {
   implicit val formats = DefaultFormats
@@ -22,8 +24,10 @@ class ElasticsearchRepositoryImpl(url: String) extends ElasticsearchRepository {
   override def status(): Boolean = {
     val endpoint = url
     val request = Http(endpoint)
-    val response: HttpResponse[String] = request.asString
-    response.code == 200
+    Try {
+      val response: HttpResponse[String] = request.asString
+      response.code == 200
+    }.getOrElse(false)
   }
 
   override def updateTemplate(templateName: String, mapping: String): Unit = {
