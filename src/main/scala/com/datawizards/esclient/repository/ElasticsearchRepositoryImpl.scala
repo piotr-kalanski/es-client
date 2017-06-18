@@ -24,10 +24,14 @@ object ElasticsearchRepositoryImpl {
     val result = parse(json) \ "hits"
     val total = (result \ "total").extract[Long]
     val documents = result \ "hits" \ "_source"
-    val hits = for {
-      JArray(arr) <- documents
-      d <- arr
-    } yield d.extract[T]
+    val hits = documents match {
+      case a:JArray =>
+        for(d <- a.arr)
+          yield d.extract[T]
+      case o:JObject =>
+        Seq(o.extract[T])
+      case _ => throw new Exception("Not correct json: " + json)
+    }
     SearchResult(total, hits)
   }
 

@@ -2,7 +2,7 @@ name := "es-client"
 
 organization := "com.github.piotr-kalanski"
 
-version := "0.2.0"
+version := "0.2.1"
 
 scalaVersion := "2.11.8"
 
@@ -29,8 +29,8 @@ developers := List(
 libraryDependencies ++= Seq(
   "org.scala-lang" % "scala-reflect" % scalaVersion.value,
   "org.scalaj" %% "scalaj-http" % "2.3.0",
-  "org.json4s" %% "json4s-native" % "3.5.2",
-  "org.json4s" %% "json4s-jackson" % "3.5.2",
+  "org.json4s" %% "json4s-native" % "3.2.11",
+  "org.json4s" %% "json4s-jackson" % "3.2.11",
   "junit" % "junit" % "4.10" % "test",
   "org.scalatest" %% "scalatest" % "2.2.6" % "test"
 )
