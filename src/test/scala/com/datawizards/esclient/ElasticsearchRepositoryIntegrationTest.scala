@@ -83,7 +83,7 @@ class ElasticsearchRepositoryIntegrationTest extends FunSuite {
     repository.deleteIndexIfNotExists(indexName)
     repository.createIndex(indexName, mapping)
     repository.append(indexName, typeName, p1)
-    Thread.sleep(1000)
+    Thread.sleep(1500)
     val result = repository.search[Person](indexName)
     assertResult(1)(result.total)
     assert(result.hits.exists(p => p == p1))
