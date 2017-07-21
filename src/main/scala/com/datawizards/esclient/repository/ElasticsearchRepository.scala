@@ -1,6 +1,6 @@
 package com.datawizards.esclient.repository
 
-import com.datawizards.esclient.dto.SearchResult
+import com.datawizards.esclient.dto.{AliasAction, AliasActions, SearchResult}
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe.TypeTag
@@ -122,4 +122,9 @@ trait ElasticsearchRepository {
     * Search request without any criteria - returns first documents from index
     */
   def search[T: ClassTag: TypeTag](indexName: String): SearchResult[T]
+
+  /**
+    * Aliases operations: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-aliases.html
+    */
+  def aliases(actions: AliasActions): Unit
 }

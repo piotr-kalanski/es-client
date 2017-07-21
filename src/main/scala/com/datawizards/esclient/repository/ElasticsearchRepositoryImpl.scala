@@ -1,6 +1,6 @@
 package com.datawizards.esclient.repository
 
-import com.datawizards.esclient.dto.SearchResult
+import com.datawizards.esclient.dto.{AliasAction, AliasActions, SearchResult}
 
 import scalaj.http._
 import org.json4s.jackson.Serialization
@@ -154,5 +154,14 @@ class ElasticsearchRepositoryImpl(url: String) extends ElasticsearchRepository {
       throw new Exception(response.body)
     }
     ElasticsearchRepositoryImpl.mapHitsToSearchResult(response.body)
+  }
+
+  override def aliases(actions: AliasActions): Unit = {
+    val endpoint = url + "/_aliases"
+    val request = Http(endpoint).postData(ElasticsearchRepositoryImpl.mapClassToJson(actions))
+    val response: HttpResponse[String] = request.asString
+    if(response.code != 200) {
+      throw new Exception(response.body)
+    }
   }
 }
