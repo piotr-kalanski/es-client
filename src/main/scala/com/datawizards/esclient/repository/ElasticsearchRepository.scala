@@ -1,6 +1,6 @@
 package com.datawizards.esclient.repository
 
-import com.datawizards.esclient.dto.SearchResult
+import com.datawizards.esclient.dto._
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe.TypeTag
@@ -122,4 +122,43 @@ trait ElasticsearchRepository {
     * Search request without any criteria - returns first documents from index
     */
   def search[T: ClassTag: TypeTag](indexName: String): SearchResult[T]
+
+  /**
+    * Aliases operations: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-aliases.html
+    */
+  def updateAliases(actions: AliasActions): Unit
+
+  /**
+    * Add new alias for index
+    */
+  def createAlias(indexName: String, aliasName: String): Unit = {
+    updateAliases(AliasActions(Seq(
+      AddAction(IndexAlias(indexName, aliasName))
+    )))
+  }
+
+  /**
+    * Remove index alias
+    */
+  def removeAlias(indexName: String, aliasName: String): Unit = {
+    updateAliases(AliasActions(Seq(
+      RemoveAction(IndexAlias(indexName, aliasName))
+    )))
+  }
+
+  /**
+    * Return alias to index name mapping
+    */
+  def getAliasToIndexMappings: Map[String, String]
+
+  /**
+    * Return index name by alias
+    *
+    * @param alias alias name
+    */
+  def getIndexNameByAlias(alias: String): Option[String] = {
+    val indexName = getAliasToIndexMappings.getOrElse(alias, "")
+    if(indexName != "") Some(indexName) else None
+  }
+
 }

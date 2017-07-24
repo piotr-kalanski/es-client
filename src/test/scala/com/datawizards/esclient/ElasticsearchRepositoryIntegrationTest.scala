@@ -29,6 +29,7 @@ class ElasticsearchRepositoryIntegrationTest extends FunSuite {
       writeMultipleDocumentsTest()
       appendSingleDocumentTest()
       appendMultipleDocumentsTest()
+      createRemoveAliasTest()
     }
     else {
       println("Elasticsearch instance not running!")
@@ -97,11 +98,22 @@ class ElasticsearchRepositoryIntegrationTest extends FunSuite {
     repository.deleteIndexIfNotExists(indexName)
     repository.createIndex(indexName, mapping)
     repository.appendAll(indexName, typeName, Seq(p1, p2))
-    Thread.sleep(1000)
+    Thread.sleep(1500)
     val result = repository.search[Person](indexName)
     assertResult(2)(result.total)
     assert(result.hits.exists(p => p == p1))
     assert(result.hits.exists(p => p == p2))
+  }
+
+  private def createRemoveAliasTest(): Unit = {
+    val indexName = "poeple_index_alias_test"
+    val aliasName = "poeple_alias_test"
+    repository.deleteIndexIfNotExists(indexName)
+    repository.createIndex(indexName, mapping)
+    repository.createAlias(indexName, aliasName)
+    assertResult(Some(indexName))(repository.getIndexNameByAlias(aliasName))
+    repository.removeAlias(indexName, aliasName)
+    assert(!repository.getAliasToIndexMappings.contains(aliasName))
   }
 
 }
