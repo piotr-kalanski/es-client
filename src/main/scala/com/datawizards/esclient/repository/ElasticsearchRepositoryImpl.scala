@@ -156,12 +156,31 @@ class ElasticsearchRepositoryImpl(url: String) extends ElasticsearchRepository {
     ElasticsearchRepositoryImpl.mapHitsToSearchResult(response.body)
   }
 
-  override def aliases(actions: AliasActions): Unit = {
+  override def updateAliases(actions: AliasActions): Unit = {
     val endpoint = url + "/_aliases"
     val request = Http(endpoint).postData(ElasticsearchRepositoryImpl.mapClassToJson(actions))
     val response: HttpResponse[String] = request.asString
     if(response.code != 200) {
       throw new Exception(response.body)
     }
+  }
+
+  /**
+    * Return alias to index name mapping
+    */
+  override def getAliasToIndexMappings: Map[String, String] = {
+    val endpoint = url + "/_aliases"
+    val request = Http(endpoint)
+    val response: HttpResponse[String] = request.asString
+    val json = parse(response.body)
+    val mapping: Iterable[(String,String)] = for {
+      JObject(indexes) <- json
+      (indexName, indexPropertiesObject) <- indexes
+      JObject(indexProperties) <- indexPropertiesObject
+      (_, aliasesObject) <- indexProperties
+      JObject(aliases) <- aliasesObject
+      (aliasName, _) <- aliases
+    } yield (aliasName, indexName)
+    mapping.toMap
   }
 }
